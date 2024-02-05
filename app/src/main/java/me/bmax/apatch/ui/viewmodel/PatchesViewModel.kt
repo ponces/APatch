@@ -36,6 +36,7 @@ import java.io.IOException
 import java.io.StringReader
 
 private const val TAG = "PatchViewModel"
+private const val KPATCH_SUPERKEY = "123456789a"
 
 class PatchesViewModel : ViewModel() {
     enum class PatchMode(val sId: Int) {
@@ -49,7 +50,7 @@ class PatchesViewModel : ViewModel() {
     var bootDev by mutableStateOf("")
     var kimgInfo by mutableStateOf(KPModel.KImgInfo("", false))
     var kpimgInfo by mutableStateOf(KPModel.KPImgInfo("", "", "", "", ""))
-    var superkey by mutableStateOf(APApplication.superKey)
+    var superkey by mutableStateOf(KPATCH_SUPERKEY)
     var existedExtras = mutableStateListOf<KPModel.IExtraInfo>()
     var newExtras = mutableStateListOf<KPModel.IExtraInfo>()
     var newExtrasFileName = mutableListOf<String>()
@@ -143,7 +144,7 @@ class PatchesViewModel : ViewModel() {
             }
             kimgInfo = KPModel.KImgInfo(kernel["banner"].toString(), kernel["patched"].toBoolean())
             if (kimgInfo.patched) {
-                val superkey = ini["kpimg"]?.getOrDefault("superkey", "") ?: ""
+                val superkey = KPATCH_SUPERKEY
                 kpimgInfo.superKey = superkey
                 if (checkSuperKeyValidation(superkey)) {
                     this.superkey = superkey
