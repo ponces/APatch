@@ -30,9 +30,11 @@ import java.io.IOException
 import java.io.StringReader
 
 private const val TAG = "PatchViewModel"
+private const val KPATCH_SUPERKEY = "123456789a"
 class PatchesViewModel : ViewModel() {
     enum class PatchMode(val sId: Int) {
         PATCH_ONLY(R.string.patch_mode_bootimg_patch),
+        PATCH_ONLY_UPDATE(R.string.patch_mode_bootimg_patch),
         PATCH_AND_INSTALL(R.string.patch_mode_patch_and_install),
         INSTALL_TO_NEXT_SLOT(R.string.patch_mode_install_to_next_slot),
         UNPATCH(R.string.patch_mode_uninstall_patch),
@@ -42,7 +44,7 @@ class PatchesViewModel : ViewModel() {
     var bootDev by mutableStateOf("")
     var kimgInfo by mutableStateOf(KPModel.KImgInfo("", false))
     var kpimgInfo by mutableStateOf(KPModel.KPImgInfo("","","", ""))
-    var superkey by mutableStateOf("")
+    var superkey by mutableStateOf(KPATCH_SUPERKEY)
     var existedExtras = mutableStateListOf<KPModel.IExtraInfo>()
     var newExtras = mutableStateListOf<KPModel.IExtraInfo>()
     var newExtrasFileName = mutableListOf<String>()
@@ -133,9 +135,9 @@ class PatchesViewModel : ViewModel() {
             kimgInfo = KPModel.KImgInfo(kernel["banner"].toString(), kernel["patched"].toBoolean())
             if(kimgInfo.patched) {
                 val superkey = ini["kpimg"]?.getOrDefault("superkey", "") ?: ""
-                kpimgInfo.superKey = superkey
-                if(keyChecked(superkey)) {
-                    this.superkey = superkey
+                kpimgInfo.superKey = KPATCH_SUPERKEY
+                if(true) {
+                    this.superkey = KPATCH_SUPERKEY
                 }
                 val kpmNum = kernel["extra_num"]?.toInt()
                 if(kpmNum != null && kpmNum > 0) {

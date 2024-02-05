@@ -136,7 +136,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             val dialogHost = LocalDialogHost.current
 
             // clear key
-            if (kPatchReady) {
+            if (false) {
                 ListItem(
                     leadingContent = {
                         Icon(
@@ -152,7 +152,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             }
 
             // store key local?
-            if(true) {
+            if(false) {
                 SwitchItem(
                     icon = Icons.Filled.Key,
                     title = stringResource(id = R.string.settings_donot_store_superkey),

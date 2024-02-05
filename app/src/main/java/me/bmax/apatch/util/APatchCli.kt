@@ -10,6 +10,7 @@ import dev.utils.app.AppUtils.getSharedPreferences
 import me.bmax.apatch.APApplication
 import me.bmax.apatch.BuildConfig
 import me.bmax.apatch.apApp
+import org.json.JSONArray
 import java.io.File
 
 private const val TAG = "APatchCli"
@@ -92,6 +93,27 @@ fun listModules(): String {
     val out =
         shell.newJob().add("${APApplication.APD_PATH} module list").to(ArrayList(), null).exec().out
     return out.joinToString("\n").ifBlank { "[]" }
+}
+
+fun getModuleCount(): Int {
+    return try {
+        val array = JSONArray(listModules())
+        array.length()
+    } catch (e: Throwable) {
+        Log.e(TAG, "getModuleCount failed: ", e)
+        0
+    }
+}
+
+fun getSuperuserCount(): Int {
+    return try {
+        val shell = getRootShell()
+        val out = shell.newJob().add("${APApplication.KPATCH_PATH} ${APApplication.superKey} sumgr num").to(ArrayList(), null).exec().out
+        out[0].toIntOrNull() ?: 0
+    } catch (e: Throwable) {
+        Log.e(TAG, "getSuperuserCount failed: ", e)
+        0
+    }
 }
 
 fun toggleModule(id: String, enable: Boolean): Boolean {

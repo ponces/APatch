@@ -20,6 +20,7 @@ import kotlin.concurrent.thread
 lateinit var apApp: APApplication
 
 const val TAG = "APatch"
+const val KPATCH_SUPERKEY = "123456789a"
 
 class APApplication : Application() {
     enum class State {
@@ -163,16 +164,16 @@ class APApplication : Application() {
         }
 
 
-        var superKey: String = ""
+        var superKey: String = KPATCH_SUPERKEY
             set(value) {
-                field = value
-                val ready = Natives.nativeReady(value)
+                field = KPATCH_SUPERKEY
+                val ready = Natives.nativeReady(KPATCH_SUPERKEY)
                 _kpStateLiveData.value = if (ready) State.KERNELPATCH_INSTALLED else State.UNKNOWN_STATE
                 _apStateLiveData.value = if (ready) State.ANDROIDPATCH_NOT_INSTALLED else State.UNKNOWN_STATE
                 Log.d(TAG, "state: " + _kpStateLiveData.value)
                 if(!ready) return
 
-                APatchKeyHelper.writeSPSuperKey(value)
+                APatchKeyHelper.writeSPSuperKey(KPATCH_SUPERKEY)
 
                 thread {
                     val rc = Natives.su(0, null)

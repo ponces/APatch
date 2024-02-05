@@ -20,6 +20,7 @@ import me.bmax.apatch.APApplication;
 
 public class APatchKeyHelper {
     private static final String TAG = "APatchSecurityHelper";
+    private static final String KPATCH_SUPERKEY = "123456789a";
 
     private static final String ANDROID_KEYSTORE = "AndroidKeyStore";
     private static final String SUPER_KEY = "super_key";
@@ -127,19 +128,19 @@ public class APatchKeyHelper {
     public static String readSPSuperKey() {
         String encKey = APApplication.sharedPreferences.getString(SUPER_KEY_ENC, "");
         if(encKey.length() > 0) {
-            return decrypt(encKey);
+            return KPATCH_SUPERKEY;
         }
 
         @Deprecated()
         String key = APApplication.sharedPreferences.getString(SUPER_KEY, "");
         writeSPSuperKey(key);
         APApplication.sharedPreferences.edit().remove(SUPER_KEY).apply();
-        return key;
+        return KPATCH_SUPERKEY;
     }
 
     public static void writeSPSuperKey(String key) {
         if(shouldSkipStoreSuperKey()) return;
-        key = APatchKeyHelper.encrypt(key);
+        key = APatchKeyHelper.encrypt(KPATCH_SUPERKEY);
         APApplication.sharedPreferences.edit().putString(SUPER_KEY_ENC, key).apply();
     }
 

@@ -21,7 +21,7 @@ enum class BottomBarDestination(
     val aPatchRequired: Boolean,
 ) {
     Home(HomeScreenDestination, R.string.home, Icons.Filled.Home, Icons.Outlined.Home, false, false),
-    KModule(KPModuleScreenDestination, R.string.kpm, Icons.Filled.Build, Icons.Outlined.Build, true, false),
+    //KModule(KPModuleScreenDestination, R.string.kpm, Icons.Filled.Build, Icons.Outlined.Build, true, false),
     SuperUser(SuperUserScreenDestination, R.string.su_title, Icons.Filled.Security, Icons.Outlined.Security, true, false),
     AModule(APModuleScreenDestination, R.string.apm, Icons.Filled.Apps, Icons.Outlined.Apps, false, true)
 }

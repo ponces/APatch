@@ -73,7 +73,7 @@ fun HomeScreen(navigator: DestinationsNavigator) {
             navigator.navigate(SettingScreenDestination, true)
         })
     }, floatingActionButton = {
-        if (showPatchFloatAction) {
+        if (false) {
             ExtendedFloatingActionButton(
                 onClick = {
                     navigator.navigate(PatchesDestination(PatchesViewModel.PatchMode.PATCH_ONLY))
@@ -97,8 +97,9 @@ fun HomeScreen(navigator: DestinationsNavigator) {
                 UpdateCard()
             }
             WarningCard()
-            KStatusCard(kpState, navigator)
-            AStatusCard(apState)
+            StatusCard(kpState, apState, navigator)
+            //KStatusCard(kpState, navigator)
+            //AStatusCard(apState)
             InfoCard()
             LearnMoreCard()
             Spacer(Modifier)
@@ -258,6 +259,192 @@ fun PatchDialog(showPatchDialog: MutableState<Boolean>, navigator: DestinationsN
             confirmButton = {},
             dismissButton = {}
         )
+    }
+}
+
+@Composable
+fun UninstallDialog(showDialog: MutableState<Boolean>, navigator: DestinationsNavigator) {
+    AlertDialog(
+        onDismissRequest = { showDialog.value = false },
+        title = { Text(stringResource(id = R.string.home_ap_cando_uninstall)) },
+        text = { Column { Text(text = "Do you want to apply a simple or a full uninstall?") } },
+        dismissButton = {
+            Button(
+                onClick = {
+                    showDialog.value = false
+                    APApplication.uninstallApatch()
+                }
+            ) { Text("Simple") }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    showDialog.value = false
+                    APApplication.uninstallApatch()
+                    navigator.navigate(PatchesDestination(PatchesViewModel.PatchMode.UNPATCH))
+                }
+            ) { Text("Full") }
+        }
+    )
+}
+
+@Composable
+private fun StatusCard(kpState: APApplication.State, apState: APApplication.State, navigator: DestinationsNavigator) {
+    val showUninstallDialog = remember { mutableStateOf(false) }
+    if (showUninstallDialog.value) {
+        UninstallDialog(showDialog = showUninstallDialog, navigator = navigator)
+    }
+
+    ElevatedCard(
+        colors = CardDefaults.elevatedCardColors(containerColor = run {
+            MaterialTheme.colorScheme.secondaryContainer
+        })
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
+            when {
+                apState.equals(APApplication.State.ANDROIDPATCH_NOT_INSTALLED) -> {
+                    Icon(Icons.Outlined.Block, stringResource(R.string.home_not_installed))
+                }
+                apState.equals(APApplication.State.ANDROIDPATCH_INSTALLING) -> {
+                    Icon(Icons.Outlined.InstallMobile, stringResource(R.string.home_installing))
+                }
+                apState.equals(APApplication.State.ANDROIDPATCH_INSTALLED) -> {
+                    Icon(Icons.Outlined.CheckCircle, stringResource(R.string.home_working))
+                }
+                kpState.equals(APApplication.State.KERNELPATCH_NEED_UPDATE) ||
+                kpState.equals(APApplication.State.KERNELPATCH_NEED_REBOOT) ||
+                apState.equals(APApplication.State.ANDROIDPATCH_NEED_UPDATE) -> {
+                    Icon(Icons.Outlined.SystemUpdate, stringResource(R.string.home_need_update))
+                }
+                else -> {
+                    Icon(Icons.Outlined.Block, stringResource(R.string.home_install_unknown))
+                }
+            }
+            Column(
+                Modifier
+                    .weight(2f)
+                    .padding(start = 16.dp)
+            ) {
+                val managerVersion = Version.getManagerVersion()
+                when {
+                    apState.equals(APApplication.State.ANDROIDPATCH_NOT_INSTALLED) -> {
+                        Text(text = stringResource(R.string.home_not_installed),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                    apState.equals(APApplication.State.ANDROIDPATCH_INSTALLING) -> {
+                        Text(text = stringResource(R.string.home_installing),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                    apState.equals(APApplication.State.ANDROIDPATCH_INSTALLED) -> {
+                        Text(text = stringResource(R.string.home_working),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Text(text = stringResource(R.string.apatch_version, managerVersion.second),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    kpState.equals(APApplication.State.KERNELPATCH_NEED_UPDATE) ||
+                    kpState.equals(APApplication.State.KERNELPATCH_NEED_REBOOT) -> {
+                        Text(text = stringResource(R.string.home_need_update),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Text(text = stringResource(R.string.kpatch_version_update, Version.installedKPVString(), Version.buildKPVString()),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    apState.equals(APApplication.State.ANDROIDPATCH_NEED_UPDATE) -> {
+                        Text(text = stringResource(R.string.home_need_update),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Text(text = stringResource(R.string.apatch_version_update, Version.installedApdVString, managerVersion.second),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    else -> {
+                        Text(text = stringResource(R.string.home_install_unknown),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
+                if (!kpState.equals(APApplication.State.UNKNOWN_STATE)) {
+                    Spacer(Modifier.height(4.dp))
+                    Text(text = "Superusers: " + getSuperuserCount(),
+                            style = MaterialTheme.typography.bodyMedium
+                    )
+                    if (apState.equals(APApplication.State.ANDROIDPATCH_INSTALLED) ||
+                        apState.equals(APApplication.State.ANDROIDPATCH_NEED_UPDATE)) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(text = "Modules: " + getModuleCount(),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            }
+            Column (modifier = Modifier
+                .align(Alignment.CenterVertically)
+            ) {
+                Button(
+                    onClick = {
+                        when {
+                            kpState.equals(APApplication.State.UNKNOWN_STATE) ||
+                            apState.equals(APApplication.State.UNKNOWN_STATE) -> {
+                                navigator.navigate(PatchesDestination(PatchesViewModel.PatchMode.PATCH_ONLY))
+                            }
+                            kpState.equals(APApplication.State.KERNELPATCH_NEED_UPDATE) -> {
+                                navigator.navigate(PatchesDestination(PatchesViewModel.PatchMode.PATCH_ONLY_UPDATE))
+                            }
+                            kpState.equals(APApplication.State.KERNELPATCH_NEED_REBOOT) -> {
+                                reboot()
+                            }
+                            apState.equals(APApplication.State.ANDROIDPATCH_NOT_INSTALLED) ||
+                            apState.equals(APApplication.State.ANDROIDPATCH_NEED_UPDATE) -> {
+                                APApplication.installApatch()
+                            }
+                            kpState.equals(APApplication.State.KERNELPATCH_UNINSTALLING) ||
+                            apState.equals(APApplication.State.ANDROIDPATCH_UNINSTALLING) -> {
+                                // Do nothing
+                            }
+                            else -> {
+                                showUninstallDialog.value = true
+                            }
+                        }
+                    },
+                    content = {
+                        when {
+                            kpState.equals(APApplication.State.UNKNOWN_STATE) ||
+                            apState.equals(APApplication.State.UNKNOWN_STATE) -> {
+                                Text(text = stringResource(id = R.string.patch))
+                            }
+                            kpState.equals(APApplication.State.KERNELPATCH_NEED_REBOOT) -> {
+                                Text(text = stringResource(id = R.string.home_ap_cando_reboot))
+                            }
+                            kpState.equals(APApplication.State.KERNELPATCH_NEED_UPDATE) ||
+                            apState.equals(APApplication.State.ANDROIDPATCH_NEED_UPDATE) -> {
+                                Text(text = stringResource(id = R.string.home_ap_cando_update))
+                            }
+                            apState.equals(APApplication.State.ANDROIDPATCH_NOT_INSTALLED) -> {
+                                Text(text = stringResource(id = R.string.home_ap_cando_install))
+                            }
+                            kpState.equals(APApplication.State.KERNELPATCH_UNINSTALLING) ||
+                            apState.equals(APApplication.State.ANDROIDPATCH_UNINSTALLING) -> {
+                                Icon(Icons.Outlined.Cached, contentDescription = "busy")
+                            }
+                            else -> {
+                                Text(text = stringResource(id = R.string.home_ap_cando_uninstall))
+                            }
+                        }
+                    }
+                )
+            }
+        }
     }
 }
 
