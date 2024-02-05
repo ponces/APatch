@@ -181,7 +181,7 @@ fun RebootDropdownItem(@StringRes id: Int, reason: String = "") {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar(onSettingsClick: () -> Unit) {
-    TopAppBar(title = { Text(stringResource(R.string.app_name)) }, actions = {
+    TopAppBar(title = { Text("APatchLite") }, actions = {
         var showDropdown by remember { mutableStateOf(false) }
         IconButton(onClick = {
             showDropdown = true
@@ -732,7 +732,7 @@ fun UpdateCard() {
 @Composable
 fun LearnMoreCard() {
     val uriHandler = LocalUriHandler.current
-    val url = stringResource(R.string.home_learn_android_patch_url)
+    val url = "https://github.com/ponces/APatchLite"
 
     ElevatedCard {
         Row(modifier = Modifier
