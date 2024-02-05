@@ -61,5 +61,9 @@ fi
 
 echo "- Flash successful"
 
+echo "- Cleaning up"
+./magiskboot cleanup >/dev/null 2>&1
+rm -f kernel.ori
+
 # Reset any error code
 true

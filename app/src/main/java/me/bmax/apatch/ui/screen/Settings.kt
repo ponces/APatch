@@ -100,7 +100,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             val scope = rememberCoroutineScope()
             val dialogHost = LocalDialogHost.current
             
-            if (kPatchReady) {
+            if (false) {
                 ListItem(
                     leadingContent = {
                         Icon(

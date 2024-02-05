@@ -65,6 +65,7 @@ import me.bmax.apatch.util.Version
 import me.bmax.apatch.util.reboot
 
 private val TAG = "Patches"
+private val KPATCH_SUPERKEY = "123456789"
 
 @Destination
 @Composable
@@ -74,8 +75,36 @@ fun Patches(navigator: DestinationsNavigator, mode: PatchesViewModel.PatchMode) 
     val scope = rememberCoroutineScope()
 
     val viewModel = viewModel<PatchesViewModel>()
+
+    val selectFileLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) {
+        if (it.resultCode != Activity.RESULT_OK) {
+            return@rememberLauncherForActivityResult
+        }
+        val data = it.data ?: return@rememberLauncherForActivityResult
+        val uri = data.data ?: return@rememberLauncherForActivityResult
+        viewModel.copyAndParseBootimg(uri)
+        do {
+            Thread.sleep(100)
+        } while (viewModel.running)
+        viewModel.doPatch(mode)
+    }
+
     SideEffect() {
         viewModel.prepare(mode)
+        do {
+            Thread.sleep(100)
+        } while (viewModel.running)
+        if (mode.equals(PatchesViewModel.PatchMode.PATCH)) {
+            val intent = Intent(Intent.ACTION_GET_CONTENT)
+            intent.type = "*/*"
+            selectFileLauncher.launch(intent)
+        } else if (mode.equals(PatchesViewModel.PatchMode.UPDATE)) {
+            viewModel.doPatch(mode)
+        } else if (mode.equals(PatchesViewModel.PatchMode.UNPATCH)) {
+            viewModel.doUnpatch()
+        }
     }
 
     Scaffold(topBar = {
@@ -121,6 +150,21 @@ fun Patches(navigator: DestinationsNavigator, mode: PatchesViewModel.PatchMode) 
                     permissionRequest.value = false
                 }
             }).request(current as Activity)
+
+            if(viewModel.patching || viewModel.patchdone) {
+                Text(
+                    modifier = Modifier.padding(8.dp),
+                    text = viewModel.patchLog,
+                    fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                    fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                    lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                )
+                LaunchedEffect(viewModel.patchLog) {
+                    scrollState.animateScrollTo(scrollState.maxValue)
+                }
+            }
+
+            return@Scaffold
 
             PatchMode(mode)
             ErrorView(viewModel.error)

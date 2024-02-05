@@ -18,6 +18,7 @@ import kotlin.concurrent.thread
 lateinit var apApp: APApplication
 
 val TAG = "APatch"
+val KPATCH_SUPERKEY = "123456789"
 
 class APApplication : Application() {
     enum class State {
@@ -82,6 +83,7 @@ class APApplication : Application() {
             Natives.resetSuPath(DEFAULT_SU_PATH)
 
             val cmds = arrayOf(
+                "rm -f ${KPATCH_PATH}",
                 "rm -f ${APD_PATH}",
                 "rm -rf ${APATCH_FOLDER}",
             )
@@ -113,7 +115,7 @@ class APApplication : Application() {
                 "mkdir -p ${APATCH_LOG_FOLDER}",
 
                 // kpatch extracted from kernel
-                "[ -s ${KPATCH_PATH} ] || cp -f ${nativeDir}/libkpatch.so ${KPATCH_PATH}",
+                "cp -f ${nativeDir}/libkpatch.so ${KPATCH_PATH}",
                 "chmod +x ${KPATCH_PATH}",
                 "ln -s ${KPATCH_PATH} ${KPATCH_LINK_PATH}",
                 "restorecon ${KPATCH_PATH}",
@@ -147,17 +149,17 @@ class APApplication : Application() {
         }
 
 
-        var superKey: String = ""
+        var superKey: String = KPATCH_SUPERKEY
             get
             set(value) {
-                field = value
-                val ready = Natives.nativeReady(value)
+                field = KPATCH_SUPERKEY
+                val ready = Natives.nativeReady(KPATCH_SUPERKEY)
                 _kpStateLiveData.value = if (ready) State.KERNELPATCH_INSTALLED else State.UNKNOWN_STATE
                 _apStateLiveData.value = if (ready) State.ANDROIDPATCH_NOT_INSTALLED else State.UNKNOWN_STATE
                 Log.d(TAG, "state: " + _kpStateLiveData.value)
                 if(!ready) return
 
-                sharedPreferences.edit().putString(SUPER_KEY, value).apply()
+                sharedPreferences.edit().putString(SUPER_KEY, KPATCH_SUPERKEY).apply()
 
                 thread {
                     val rc = Natives.su(0, null)
@@ -209,7 +211,7 @@ class APApplication : Application() {
     fun clearKey() {
         _kpStateLiveData.value = State.UNKNOWN_STATE
         _apStateLiveData.value = State.UNKNOWN_STATE
-        sharedPreferences.edit().putString(SUPER_KEY, "").apply()
+        sharedPreferences.edit().putString(SUPER_KEY, KPATCH_SUPERKEY).apply()
     }
 
     override fun onCreate() {
@@ -217,7 +219,7 @@ class APApplication : Application() {
         apApp = this
 
         sharedPreferences = getSharedPreferences("config", Context.MODE_PRIVATE)
-        superKey = sharedPreferences.getString(SUPER_KEY, "") ?: ""
+        superKey = sharedPreferences.getString(SUPER_KEY, KPATCH_SUPERKEY) ?: KPATCH_SUPERKEY
 
         val context = this
         val iconSize = resources.getDimensionPixelSize(android.R.dimen.app_icon_size)
