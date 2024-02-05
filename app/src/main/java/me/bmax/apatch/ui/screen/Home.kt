@@ -388,7 +388,7 @@ private fun TopBar(onInstallClick: () -> Unit, navigator: DestinationsNavigator)
     var showDropdownReboot by remember { mutableStateOf(false) }
 
     TopAppBar(title = {
-        Text(stringResource(R.string.app_name))
+        Text("APatchLite")
     }, actions = {
         IconButton(onClick = onInstallClick) {
             Icon(
@@ -967,7 +967,7 @@ fun UpdateCard() {
 @Composable
 fun LearnMoreCard() {
     val uriHandler = LocalUriHandler.current
-    val url = stringResource(R.string.home_learn_android_patch_url)
+    val url = "https://github.com/ponces/APatchLite"
 
     ElevatedCard {
         Row(modifier = Modifier
