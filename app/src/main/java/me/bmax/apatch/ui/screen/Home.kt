@@ -66,7 +66,7 @@ fun HomeScreen(navigator: DestinationsNavigator) {
             navigator.navigate(SettingScreenDestination, true)
         })
     }, floatingActionButton = {
-        if(showPatchFloatAction) {
+        if(false) {
             ExtendedFloatingActionButton(
                 onClick = {
                     navigator.navigate(PatchesDestination(PatchesViewModel.PatchMode.PATCH))
@@ -84,8 +84,9 @@ fun HomeScreen(navigator: DestinationsNavigator) {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             WarningCard()
-            KStatusCard(kpState, navigator)
-            AStatusCard(apState)
+            StatusCard(kpState, apState, navigator)
+            //KStatusCard(kpState, navigator)
+            //AStatusCard(apState)
             InfoCard()
             LearnMoreCard()
             Spacer(Modifier)
@@ -168,7 +169,7 @@ fun RebootDropdownItem(@StringRes id: Int, reason: String = "") {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar(onSettingsClick: () -> Unit) {
-    TopAppBar(title = { Text(stringResource(R.string.app_name)) }, actions = {
+    TopAppBar(title = { Text("APatchLite") }, actions = {
         var showDropdown by remember { mutableStateOf(false) }
         IconButton(onClick = {
             showDropdown = true
@@ -201,6 +202,163 @@ private fun TopBar(onSettingsClick: () -> Unit) {
             )
         }
     })
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun StatusCard(kpState: APApplication.State, apState: APApplication.State, navigator: DestinationsNavigator) {
+    ElevatedCard(
+        colors = CardDefaults.elevatedCardColors(containerColor = run {
+            MaterialTheme.colorScheme.secondaryContainer
+        })
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
+            when {
+                apState.equals(APApplication.State.ANDROIDPATCH_NOT_INSTALLED) -> {
+                    Icon(Icons.Outlined.Block, stringResource(R.string.home_not_installed))
+                }
+                apState.equals(APApplication.State.ANDROIDPATCH_INSTALLING) -> {
+                    Icon(Icons.Outlined.InstallMobile, stringResource(R.string.home_installing))
+                }
+                apState.equals(APApplication.State.ANDROIDPATCH_INSTALLED) -> {
+                    Icon(Icons.Outlined.CheckCircle, stringResource(R.string.home_working))
+                }
+                kpState.equals(APApplication.State.KERNELPATCH_NEED_UPDATE) ||
+                kpState.equals(APApplication.State.KERNELPATCH_NEED_REBOOT) ||
+                apState.equals(APApplication.State.ANDROIDPATCH_NEED_UPDATE) -> {
+                    Icon(Icons.Outlined.SystemUpdate, stringResource(R.string.home_need_update))
+                }
+                else -> {
+                    Icon(Icons.Outlined.Block, stringResource(R.string.home_install_unknown))
+                }
+            }
+            Column(
+                Modifier
+                    .weight(2f)
+                    .padding(start = 16.dp)
+            ) {
+                val managerVersion = Version.getManagerVersion()
+                when {
+                    apState.equals(APApplication.State.ANDROIDPATCH_NOT_INSTALLED) -> {
+                        Text(text = stringResource(R.string.home_not_installed),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                    apState.equals(APApplication.State.ANDROIDPATCH_INSTALLING) -> {
+                        Text(text = stringResource(R.string.home_installing),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                    apState.equals(APApplication.State.ANDROIDPATCH_INSTALLED) -> {
+                        Text(text = stringResource(R.string.home_working),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Text(text = stringResource(R.string.apatch_version, managerVersion.second),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    kpState.equals(APApplication.State.KERNELPATCH_NEED_UPDATE) ||
+                    kpState.equals(APApplication.State.KERNELPATCH_NEED_REBOOT) -> {
+                        Text(text = stringResource(R.string.home_need_update),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Text(text = stringResource(R.string.kpatch_version_update, Version.installedKPVString(), Version.buildKPVString()),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    apState.equals(APApplication.State.ANDROIDPATCH_NEED_UPDATE) -> {
+                        Text(text = stringResource(R.string.home_need_update),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Text(text = stringResource(R.string.apatch_version_update, Version.installedApdVString, managerVersion.second),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    else -> {
+                        Text(text = stringResource(R.string.home_install_unknown),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
+                if (!kpState.equals(APApplication.State.UNKNOWN_STATE)) {
+                    Spacer(Modifier.height(4.dp))
+                    Text(text = "Superusers: " + getSuperuserCount(),
+                            style = MaterialTheme.typography.bodyMedium
+                    )
+                    if (apState.equals(APApplication.State.ANDROIDPATCH_INSTALLED) ||
+                        apState.equals(APApplication.State.ANDROIDPATCH_NEED_UPDATE)) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(text = "Modules: " + getModuleCount(),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            }
+            Column (modifier = Modifier
+                .align(Alignment.CenterVertically)
+            ) {
+                Button(
+                    onClick = {
+                        when {
+                            kpState.equals(APApplication.State.UNKNOWN_STATE) ||
+                            apState.equals(APApplication.State.UNKNOWN_STATE) -> {
+                                navigator.navigate(PatchesDestination(PatchesViewModel.PatchMode.PATCH))
+                            }
+                            kpState.equals(APApplication.State.KERNELPATCH_NEED_UPDATE) -> {
+                                navigator.navigate(PatchesDestination(PatchesViewModel.PatchMode.UPDATE))
+                            }
+                            kpState.equals(APApplication.State.KERNELPATCH_NEED_REBOOT) -> {
+                                reboot()
+                            }
+                            apState.equals(APApplication.State.ANDROIDPATCH_NOT_INSTALLED) ||
+                            apState.equals(APApplication.State.ANDROIDPATCH_NEED_UPDATE) -> {
+                                APApplication.installApatch()
+                            }
+                            kpState.equals(APApplication.State.KERNELPATCH_UNINSTALLING) ||
+                            apState.equals(APApplication.State.ANDROIDPATCH_UNINSTALLING) -> {
+                                // Do nothing
+                            }
+                            else -> {
+                                APApplication.uninstallApatch()
+                                navigator.navigate(PatchesDestination(PatchesViewModel.PatchMode.UNPATCH))
+                            }
+                        }
+                    },
+                    content = {
+                        when {
+                            kpState.equals(APApplication.State.UNKNOWN_STATE) ||
+                            apState.equals(APApplication.State.UNKNOWN_STATE) -> {
+                                Text(text = stringResource(id = R.string.patch))
+                            }
+                            kpState.equals(APApplication.State.KERNELPATCH_NEED_REBOOT) -> {
+                                Text(text = stringResource(id = R.string.home_ap_cando_reboot))
+                            }
+                            kpState.equals(APApplication.State.KERNELPATCH_NEED_UPDATE) ||
+                            apState.equals(APApplication.State.ANDROIDPATCH_NEED_UPDATE) -> {
+                                Text(text = stringResource(id = R.string.home_ap_cando_update))
+                            }
+                            apState.equals(APApplication.State.ANDROIDPATCH_NOT_INSTALLED) -> {
+                                Text(text = stringResource(id = R.string.home_ap_cando_install))
+                            }
+                            kpState.equals(APApplication.State.KERNELPATCH_UNINSTALLING) ||
+                            apState.equals(APApplication.State.ANDROIDPATCH_UNINSTALLING) -> {
+                                Icon(Icons.Outlined.Cached, contentDescription = "busy")
+                            }
+                            else -> {
+                                Text(text = stringResource(id = R.string.home_ap_cando_uninstall))
+                            }
+                        }
+                    }
+                )
+            }
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -550,7 +708,7 @@ private fun InfoCard() {
 @Composable
 fun LearnMoreCard() {
     val uriHandler = LocalUriHandler.current
-    val url = stringResource(R.string.home_learn_android_patch_url)
+    val url = "https://github.com/ponces/APatchLite"
 
     ElevatedCard {
         Row(modifier = Modifier
