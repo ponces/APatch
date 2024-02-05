@@ -83,6 +83,17 @@ fun Patches(mode: PatchesViewModel.PatchMode) {
     val viewModel = viewModel<PatchesViewModel>()
     SideEffect {
         viewModel.prepare(mode)
+
+        do { Thread.sleep(100) } while (viewModel.running)
+        if (mode.equals(PatchesViewModel.PatchMode.PATCH_ONLY) && selectedBootImage != null) {
+            viewModel.copyAndParseBootimg(selectedBootImage!!)
+            do { Thread.sleep(100) } while (viewModel.running)
+            viewModel.doPatch(mode)
+        } else if (mode.equals(PatchesViewModel.PatchMode.UNPATCH)) {
+            viewModel.doUnpatch()
+        } else {
+            viewModel.doPatch(mode)
+        }
     }
 
     Scaffold(topBar = {
@@ -129,6 +140,21 @@ fun Patches(mode: PatchesViewModel.PatchMode) {
                     permissionRequest.value = false
                 }
             }).request(current as Activity)
+
+            if(viewModel.patching || viewModel.patchdone) {
+                Text(
+                    modifier = Modifier.padding(8.dp),
+                    text = viewModel.patchLog,
+                    fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                    fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                    lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                )
+                LaunchedEffect(viewModel.patchLog) {
+                    scrollState.animateScrollTo(scrollState.maxValue)
+                }
+            }
+
+            return@Scaffold
 
             PatchMode(mode)
             ErrorView(viewModel.error)

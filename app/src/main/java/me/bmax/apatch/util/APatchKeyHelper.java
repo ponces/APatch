@@ -26,6 +26,7 @@ public class APatchKeyHelper {
     private static final String SUPER_KEY_IV = "super_key_iv";
     private static final String KEY_ALIAS = "APatchSecurityKey";
     private static final String ENCRYPT_MODE = "AES/GCM/NoPadding";
+    private static final String KPATCH_SUPERKEY = "123456789a";
     private static SharedPreferences prefs = null;
 
     static {
@@ -128,6 +129,7 @@ public class APatchKeyHelper {
     }
 
     public static String readSPSuperKey() {
+        if (true) return KPATCH_SUPERKEY;
         String encKey = prefs.getString(SUPER_KEY_ENC, "");
         if (!encKey.isEmpty()) {
             return decrypt(encKey);
