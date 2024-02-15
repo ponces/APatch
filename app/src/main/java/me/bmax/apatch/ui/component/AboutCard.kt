@@ -84,7 +84,7 @@ private fun AboutCardContent() {
             Column {
 
                 Text(
-                    stringResource(id = R.string.app_name),
+                    "APatchLite",
                     style = MaterialTheme.typography.titleSmall,
                     fontSize = 18.sp
                 )
@@ -99,7 +99,7 @@ private fun AboutCardContent() {
                 HtmlText(
                     html = stringResource(
                         id = R.string.about_source_code,
-                        "<b><a href=\"https://github.com/bmax121/APatch\">GitHub</a></b>",
+                        "<b><a href=\"https://github.com/ponces/APatchLite\">GitHub</a></b>",
                         "<b><a href=\"https://t.me/APatchChannel\">Telegram</a></b>"
                     )
                 )

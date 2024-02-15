@@ -21,6 +21,8 @@ lateinit var apApp: APApplication
 
 val TAG = "APatch"
 
+val KPATCH_SUPERKEY = "123456789"
+
 class APApplication : Application() {
     enum class State {
         UNKNOWN_STATE,
@@ -152,14 +154,14 @@ class APApplication : Application() {
             }
         }
 
-        var superKey: String = ""
+        var superKey: String = KPATCH_SUPERKEY
             get
             private set(value) {
-                field = value
-                val ready = Natives.nativeReady(value)
+                field = KPATCH_SUPERKEY
+                val ready = Natives.nativeReady(KPATCH_SUPERKEY)
                 _apStateLiveData.value = if(ready) State.KERNELPATCH_READY else State.UNKNOWN_STATE
                 Log.d(TAG, "state: " + _apStateLiveData.value)
-                sharedPreferences.edit().putString(SUPER_KEY, value).apply()
+                sharedPreferences.edit().putString(SUPER_KEY, KPATCH_SUPERKEY).apply()
 
                 thread {
                     val rc = Natives.su(0, null)
@@ -197,11 +199,11 @@ class APApplication : Application() {
     }
 
     fun getSuperKey(): String {
-        return superKey
+        return KPATCH_SUPERKEY
     }
 
     fun updateSuperKey(password: String) {
-        superKey = password
+        superKey = KPATCH_SUPERKEY
     }
 
     override fun onCreate() {
@@ -210,7 +212,7 @@ class APApplication : Application() {
 
         // todo:
         sharedPreferences = getSharedPreferences("config", Context.MODE_PRIVATE)
-        superKey = sharedPreferences.getString(SUPER_KEY, "") ?: ""
+        superKey = sharedPreferences.getString(SUPER_KEY, KPATCH_SUPERKEY) ?: KPATCH_SUPERKEY
 
 
 

@@ -54,6 +54,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dev.utils.app.permission.PermissionUtils
 import dev.utils.app.permission.PermissionUtils.PermissionCallback
 import me.bmax.apatch.util.getSELinuxStatus
+import me.bmax.apatch.util.*
 import me.bmax.apatch.*
 import me.bmax.apatch.R
 import me.bmax.apatch.ui.component.ConfirmDialog
@@ -73,7 +74,7 @@ fun HomeScreen(navigator: DestinationsNavigator) {
         })
     }, floatingActionButton = {
 
-        FloatButton(navigator)
+        //FloatButton(navigator)
 
     }) { innerPadding ->
         Column(
@@ -84,8 +85,9 @@ fun HomeScreen(navigator: DestinationsNavigator) {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             WarningCard()
-            KStatusCard(state)
-            AStatusCard(state, navigator)
+            StatusCard(state, navigator)
+            //KStatusCard(state)
+            //AStatusCard(state, navigator)
             InfoCard()
             LearnMoreCard()
             Spacer(Modifier)
@@ -292,7 +294,7 @@ fun RebootDropdownItem(@StringRes id: Int, reason: String = "") {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar(onSettingsClick: () -> Unit) {
-    TopAppBar(title = { Text(stringResource(R.string.app_name)) }, actions = {
+    TopAppBar(title = { Text("APatchLite") }, actions = {
         var showDropdown by remember { mutableStateOf(false) }
         IconButton(onClick = {
             showDropdown = true
@@ -326,6 +328,146 @@ private fun TopBar(onSettingsClick: () -> Unit) {
             )
         }
     })
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun StatusCard(state: APApplication.State, navigator: DestinationsNavigator) {
+    val selectBootimgLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) {
+        if (it.resultCode != Activity.RESULT_OK) {
+            return@rememberLauncherForActivityResult
+        }
+        val data = it.data ?: return@rememberLauncherForActivityResult
+        val uri = data.data ?: return@rememberLauncherForActivityResult
+        navigator.navigate(PatchScreenDestination(uri, apApp.getSuperKey()))
+    }
+
+    ElevatedCard(
+        colors = CardDefaults.elevatedCardColors(containerColor = run {
+            MaterialTheme.colorScheme.secondaryContainer
+        })
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
+            when {
+                state.equals(APApplication.State.ANDROIDPATCH_NEED_UPDATE) -> {
+                    Icon(Icons.Outlined.SystemUpdate, stringResource(R.string.home_need_update))
+                }
+                state.equals(APApplication.State.KERNELPATCH_READY) -> {
+                    Icon(Icons.Outlined.Block, stringResource(R.string.home_not_installed))
+                }
+                state.equals(APApplication.State.ANDROIDPATCH_INSTALLING) -> {
+                    Icon(Icons.Outlined.InstallMobile, stringResource(R.string.home_installing))
+                }
+                state.equals(APApplication.State.ANDROIDPATCH_INSTALLED) -> {
+                    Icon(Icons.Outlined.CheckCircle, stringResource(R.string.home_working))
+                }
+                else -> {
+                    Icon(Icons.Outlined.Block, stringResource(R.string.home_install_unknown))
+                }
+            }
+            Column(
+                Modifier
+                    .weight(2f)
+                    .padding(start = 16.dp)
+            ) {
+                val managerVersion = getManagerVersion()
+                when {
+                    state.equals(APApplication.State.KERNELPATCH_READY) -> {
+                        Text(text = stringResource(R.string.home_not_installed),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                    state.equals(APApplication.State.ANDROIDPATCH_INSTALLING) -> {
+                        Text(text = stringResource(R.string.home_installing),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                    state.equals(APApplication.State.ANDROIDPATCH_NEED_UPDATE) -> {
+                        Text(text = stringResource(R.string.home_need_update),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Text(text = stringResource(R.string.apatch_version_update, APApplication.apatchVersion, managerVersion.second),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    state.equals(APApplication.State.ANDROIDPATCH_INSTALLED) -> {
+                        Text(text = stringResource(R.string.home_working),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Text(text = stringResource(R.string.apatch_version, managerVersion.second),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    else -> {
+                        Text(text = stringResource(R.string.home_install_unknown),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
+                if (!state.equals(APApplication.State.UNKNOWN_STATE)) {
+                    Spacer(Modifier.height(4.dp))
+                    Text(text = "Superusers: " + getSuperuserCount(),
+                            style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(text = "Modules: " + getModuleCount(),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+            Column (modifier = Modifier
+                .align(Alignment.CenterVertically)
+            ) {
+                Button(
+                    onClick = {
+                        when {
+                            state.equals(APApplication.State.UNKNOWN_STATE) -> {
+                                val intent = Intent(Intent.ACTION_GET_CONTENT)
+                                intent.type = "*/*"
+                                selectBootimgLauncher.launch(intent)
+                            }
+                            state.equals(APApplication.State.ANDROIDPATCH_NEED_UPDATE) ||
+                            state.equals(APApplication.State.KERNELPATCH_READY) -> {
+                                APApplication.install()
+                            }
+                            state.equals(APApplication.State.ANDROIDPATCH_UNINSTALLING) -> {
+                                // Do nothing
+                            }
+                            else -> {
+                                APApplication.uninstall()
+                            }
+                        }
+                    },
+                    content = {
+                        when {
+                            state.equals(APApplication.State.UNKNOWN_STATE) -> {
+                                Text(text = stringResource(id = R.string.patch))
+                            }
+                            state.equals(APApplication.State.ANDROIDPATCH_NEED_UPDATE) -> {
+                                Text(text = stringResource(id = R.string.home_ap_cando_update))
+                            }
+                            state.equals(APApplication.State.KERNELPATCH_READY) -> {
+                                Text(text = stringResource(id = R.string.home_ap_cando_install))
+                            }
+                            state.equals(APApplication.State.ANDROIDPATCH_UNINSTALLING) -> {
+                                Icon(Icons.Outlined.Cached, contentDescription = "busy")
+                            }
+                            else -> {
+                                Text(text = stringResource(id = R.string.home_ap_cando_uninstall))
+                            }
+                        }
+                    }
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -609,7 +751,7 @@ private fun InfoCard() {
 @Composable
 fun LearnMoreCard() {
     val uriHandler = LocalUriHandler.current
-    val url = stringResource(R.string.home_learn_android_patch_url)
+    val url = "https://github.com/ponces/APatchLite"
 
     ElevatedCard {
         Row(modifier = Modifier

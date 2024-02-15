@@ -42,8 +42,8 @@
     <string name="home_installing">Installing</string>
     <string name="home_need_update">New version available</string>
     <string name="kpatch_version">Version: %d.%d.%d</string>
-    <string name="apatch_version">Version:\n%s</string>
-    <string name="apatch_version_update">Version:\n%s -&gt; %s</string>
+    <string name="apatch_version">Version: %s</string>
+    <string name="apatch_version_update">Version: %s -&gt; %s</string>
     <string name="home_su_path">su: %s</string>
     <string name="home_su_path_ex">su: %s -&gt; %s</string>
     <string name="kpatch_shadow_path">kpatch: %s -&gt; %s</string>
