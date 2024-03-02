@@ -30,7 +30,7 @@ import java.io.IOException
 import java.io.StringReader
 
 private const val TAG = "PatchViewModel"
-private const val KPATCH_SUPERKEY = "123456789"
+private const val KPATCH_SUPERKEY = "123456789a"
 class PatchesViewModel : ViewModel() {
     enum class PatchMode(val sId: Int) {
         PATCH(R.string.patch_mode_bootimg_patch),

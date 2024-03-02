@@ -65,7 +65,7 @@ import me.bmax.apatch.util.Version
 import me.bmax.apatch.util.reboot
 
 private val TAG = "Patches"
-private val KPATCH_SUPERKEY = "123456789"
+private val KPATCH_SUPERKEY = "123456789a"
 
 @Destination
 @Composable

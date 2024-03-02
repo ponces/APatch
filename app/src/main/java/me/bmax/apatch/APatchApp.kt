@@ -18,7 +18,7 @@ import kotlin.concurrent.thread
 lateinit var apApp: APApplication
 
 val TAG = "APatch"
-val KPATCH_SUPERKEY = "123456789"
+val KPATCH_SUPERKEY = "123456789a"
 
 class APApplication : Application() {
     enum class State {
