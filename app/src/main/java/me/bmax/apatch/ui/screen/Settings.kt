@@ -194,7 +194,7 @@ fun SettingScreen() {
             val prefs = APApplication.sharedPreferences
 
             // clear key
-            if (kPatchReady) {
+            if (false) {
                 val clearKeyDialogTitle = stringResource(id = R.string.clear_super_key)
                 val clearKeyDialogContent =
                     stringResource(id = R.string.settings_clear_super_key_dialog)
@@ -212,7 +212,6 @@ fun SettingScreen() {
                         )
 
                     })
-            }
 
             // store key local?
             SwitchItem(icon = Icons.Filled.Key,
@@ -223,6 +222,7 @@ fun SettingScreen() {
                     bSkipStoreSuperKey = it
                     APatchKeyHelper.setShouldSkipStoreSuperKey(bSkipStoreSuperKey)
                 })
+            }
 
             // Global mount
             if (kPatchReady && aPatchReady) {

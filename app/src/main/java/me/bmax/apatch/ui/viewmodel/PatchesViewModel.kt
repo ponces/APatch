@@ -42,6 +42,7 @@ import java.io.InputStreamReader
 import java.io.StringReader
 
 private const val TAG = "PatchViewModel"
+private const val KPATCH_SUPERKEY = "123456789a"
 
 class PatchesViewModel : ViewModel() {
 
@@ -56,7 +57,7 @@ class PatchesViewModel : ViewModel() {
     var bootDev by mutableStateOf("")
     var kimgInfo by mutableStateOf(KPModel.KImgInfo("", false))
     var kpimgInfo by mutableStateOf(KPModel.KPImgInfo("", "", "", "", ""))
-    var superkey by mutableStateOf(APApplication.superKey)
+    var superkey by mutableStateOf(KPATCH_SUPERKEY)
     var existedExtras = mutableStateListOf<KPModel.IExtraInfo>()
     var newExtras = mutableStateListOf<KPModel.IExtraInfo>()
     var newExtrasFileName = mutableListOf<String>()
@@ -115,7 +116,7 @@ class PatchesViewModel : ViewModel() {
                     kpimg["version"].toString(),
                     kpimg["compile_time"].toString(),
                     kpimg["config"].toString(),
-                    APApplication.superKey,     // current key
+                    KPATCH_SUPERKEY,     // current key
                     kpimg["root_superkey"].toString(),   // empty
                 )
             } else {
@@ -145,7 +146,7 @@ class PatchesViewModel : ViewModel() {
             }
             kimgInfo = KPModel.KImgInfo(kernel["banner"].toString(), kernel["patched"].toBoolean())
             if (kimgInfo.patched) {
-                val superkey = ini["kpimg"]?.getOrDefault("superkey", "") ?: ""
+                val superkey = KPATCH_SUPERKEY
                 kpimgInfo.superKey = superkey
                 if (checkSuperKeyValidation(superkey)) {
                     this.superkey = superkey
@@ -373,7 +374,7 @@ class PatchesViewModel : ViewModel() {
                 val KPCheck = shell.newJob().add("truncate $superkey -Z u:r:magisk:s0 -c whoami").exec()
 
                 if (KPCheck.isSuccess) {
-                    patchCommand.addAll(0, listOf("truncate", APApplication.superKey, "-Z", APApplication.MAGISK_SCONTEXT, "-c"))
+                    patchCommand.addAll(0, listOf("truncate", KPATCH_SUPERKEY, "-Z", APApplication.MAGISK_SCONTEXT, "-c"))
                     patchCommand.addAll(listOf(superkey, srcBoot.path, "true"))
                 } else {
                     patchCommand = mutableListOf("./busybox", "sh", "boot_patch.sh")

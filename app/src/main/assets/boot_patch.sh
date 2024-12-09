@@ -100,3 +100,6 @@ else
   echo "- Successfully Patched!"
 fi
 
+echo "- Cleaning up"
+./magiskboot cleanup >/dev/null 2>&1
+rm -f kernel.ori

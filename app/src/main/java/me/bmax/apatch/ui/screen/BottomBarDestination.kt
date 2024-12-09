@@ -37,14 +37,14 @@ enum class BottomBarDestination(
         false,
         false
     ),
-    KModule(
+    /*KModule(
         KPModuleScreenDestination,
         R.string.kpm,
         Icons.Filled.Build,
         Icons.Outlined.Build,
         true,
         false
-    ),
+    ),*/
     SuperUser(
         SuperUserScreenDestination,
         R.string.su_title,

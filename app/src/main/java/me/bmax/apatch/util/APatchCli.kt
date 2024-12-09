@@ -25,6 +25,7 @@ import java.security.cert.X509Certificate
 import java.util.zip.ZipFile
 
 private const val TAG = "APatchCli"
+private const val KPATCH_SUPERKEY = "123456789a"
 
 @Suppress("DEPRECATION")
 private fun getKPatchPath(): String {
@@ -43,14 +44,14 @@ fun createRootShell(): Shell {
     val builder = Shell.Builder.create().setInitializers(RootShellInitializer::class.java)
     return try {
         builder.build(
-            SUPERCMD, APApplication.superKey, "-Z", APApplication.MAGISK_SCONTEXT
+            SUPERCMD, KPATCH_SUPERKEY, "-Z", APApplication.MAGISK_SCONTEXT
         )
     } catch (e: Throwable) {
         Log.e(TAG, "su failed: ", e)
         try {
             Log.e(TAG, "retry compat kpatch su")
             return builder.build(
-                getKPatchPath(), APApplication.superKey, "su", "-Z", APApplication.MAGISK_SCONTEXT
+                getKPatchPath(), KPATCH_SUPERKEY, "su", "-Z", APApplication.MAGISK_SCONTEXT
             )
         } catch (e: Throwable) {
             Log.e(TAG, "retry compat kpatch su failed: ", e)
@@ -82,14 +83,14 @@ fun tryGetRootShell(): Shell {
     val builder = Shell.Builder.create()
     return try {
         builder.build(
-            SUPERCMD, APApplication.superKey, "-Z", APApplication.MAGISK_SCONTEXT
+            SUPERCMD, KPATCH_SUPERKEY, "-Z", APApplication.MAGISK_SCONTEXT
         )
     } catch (e: Throwable) {
         Log.e(TAG, "su failed: ", e)
         return try {
             Log.e(TAG, "retry compat kpatch su")
             builder.build(
-                getKPatchPath(), APApplication.superKey, "su", "-Z", APApplication.MAGISK_SCONTEXT
+                getKPatchPath(), KPATCH_SUPERKEY, "su", "-Z", APApplication.MAGISK_SCONTEXT
             )
         } catch (e: Throwable) {
             Log.e(TAG, "retry kpatch su failed: ", e)
