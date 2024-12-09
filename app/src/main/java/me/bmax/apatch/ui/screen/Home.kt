@@ -390,7 +390,7 @@ private fun TopBar(
     var showDropdownReboot by remember { mutableStateOf(false) }
 
     TopAppBar(title = {
-        Text(stringResource(R.string.app_name))
+        Text("APatchLite")
     }, actions = {
         IconButton(onClick = onInstallClick) {
             Icon(

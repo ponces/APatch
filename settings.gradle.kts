@@ -21,5 +21,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "APatch"
+rootProject.name = "APatchLite"
 include(":app")

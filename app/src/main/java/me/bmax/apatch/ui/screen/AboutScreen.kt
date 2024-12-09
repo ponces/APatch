@@ -75,7 +75,7 @@ fun AboutScreen(navigator: DestinationsNavigator) {
 
             Spacer(modifier = Modifier.height(20.dp))
             Text(
-                text = stringResource(id = R.string.app_name),
+                text = "APatchLite",
                 style = MaterialTheme.typography.titleLarge
             )
             Text(
@@ -106,7 +106,7 @@ fun AboutScreen(navigator: DestinationsNavigator) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 FilledTonalButton(
-                    onClick = { uriHandler.openUri("https://github.com/bmax121/APatch") }
+                    onClick = { uriHandler.openUri("https://github.com/ponces/APatchLite") }
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.github),

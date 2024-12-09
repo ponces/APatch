@@ -97,7 +97,7 @@ jobs:
         if: ${{ env.SIGNING_KEY != '' }}
         uses: actions/upload-artifact@v4
         with:
-          name: APatch
+          name: APatchLite
           path: ${{steps.sign_app.outputs.signedReleaseFile}}
 
       - name: Post to channel

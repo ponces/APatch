@@ -54,7 +54,7 @@ class CrashHandleActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
 
-        val appName = getString(R.string.app_name)
+        val appName = "APatchLite"
         val versionName = BuildConfig.VERSION_NAME
         val versionCode = BuildConfig.VERSION_CODE
 
